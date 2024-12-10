@@ -6,75 +6,71 @@ from tkinter import filedialog, messagebox
 class DPDA:
     def __init__(self, states, input_alphabet, stack_alphabet, in_transform, transitions,
                  initial_state, initial_stack_symbol, accepting_states):
-        # Инициализация параметров автомата
-        self._states = states  # Множество состояний
-        self._input_alphabet = input_alphabet  # Алфавит входных символов
-        self._stack_alphabet = stack_alphabet  # Алфавит символов стека
-        self._in_transform = in_transform  # Символы, которые могут быть в выходной цепочке
-        self._transitions = transitions  # Переходы автомата
-        self._initial_state = initial_state  # Начальное состояние
-        self._initial_stack_symbol = initial_stack_symbol  # Начальный символ стека
-        self._accepting_states = accepting_states  # Принимающие состояния
-        self.history = []  # История работы автомата
-        self.output_string = ""  # Выходная строка автомата
-        self.reset()  # Сброс состояния автомата
+        self._states = states  
+        self._input_alphabet = input_alphabet 
+        self._stack_alphabet = stack_alphabet  
+        self._in_transform = in_transform  
+        self._transitions = transitions  
+        self._initial_state = initial_state
+        self._initial_stack_symbol = initial_stack_symbol  
+        self._accepting_states = accepting_states  
+        self.history = []  
+        self.output_string = ""  
+        self.reset()  
 
     def reset(self):
-        # Сброс состояния автомата до начального
-        self._current_state = self._initial_state  # Установка текущего состояния в начальное
-        self._stack = [self._initial_stack_symbol]  # Инициализация стека с начальным символом
-        self.history.clear()  # Очистка истории работы
-        self.output_string = ""  # Очистка выходной строки
+        self._current_state = self._initial_state 
+        self._stack = [self._initial_stack_symbol]  
+        self.history.clear()  
+        self.output_string = "" 
         self.history.append(f"Начальное состояние: {self._current_state}, стек: {self._initial_stack_symbol}")
 
     def accept(self, input_string):
-        # Метод для проверки принятия строки автоматом
-        self.reset()  # Сброс состояния перед проверкой новой строки
+        self.reset() 
         for symbol in input_string:
-            result = self.step(symbol)  # Выполнение одного шага для каждого символа строки
-            if not result[0]:  # Если шаг не удался, вернуть результат
+            result = self.step(symbol) 
+            if not result[0]: 
                 return result
         
-        result = self.step("")  # Выполнение шага для пустого символа (завершение ввода)
-        if not result[0]:  # Если шаг не удался, вернуть результат
+        result = self.step("")  
+        if not result[0]: 
             return result
         
-        if self._current_state in self._accepting_states:  # Проверка на принимающее состояние
-            return (True, "")  # Строка принята
+        if self._current_state in self._accepting_states: 
+            return (True, "")  
         
-        return (False, "Цепочка не завершилась в принимающем состоянии")  # Строка не принята
+        return (False, "Цепочка не завершилась в принимающем состоянии")  
 
     def step(self, symbol):
-        # Метод для выполнения одного шага автомата
         if symbol not in self._input_alphabet and symbol != "":
             return (False, f"В цепочке присутствуют посторонние символы (символа \"{symbol}\" нет в алфавите)!")
 
-        stack_top = self._stack[-1] if self._stack else None  # Получаем верхний символ стека или None если стек пустой
-        transition_key = f"({self._current_state}, {symbol}, {stack_top})"  # Формируем ключ для перехода
+        stack_top = self._stack[-1] if self._stack else None  
+        transition_key = f"({self._current_state}, {symbol}, {stack_top})" 
 
         if transition_key not in self._transitions:
-            return (False, f"Нет перехода для ({self._current_state}, {symbol}, {stack_top})")  # Нет подходящего перехода
+            return (False, f"Нет перехода для ({self._current_state}, {symbol}, {stack_top})") 
 
-        transition = self._transitions[transition_key]  # Получаем переход по ключу
-        next_state = transition[0]  # Следующее состояние из перехода
-        new_stack_symbols = transition[1]  # Новые символы для стека из перехода
-        output_symbol = transition[2] if len(transition) > 2 else ""  # Выходной символ
+        transition = self._transitions[transition_key]  
+        next_state = transition[0]  
+        new_stack_symbols = transition[1]  
+        output_symbol = transition[2] if len(transition) > 2 else "" 
 
         for c in output_symbol:
             if c not in self._in_transform:
-                return (False, f"Посторонний символ '{c}' в выходной цепочке!")  # Проверка на посторонние символы в выходе
+                return (False, f"Посторонний символ '{c}' в выходной цепочке!")  
 
-        self._current_state = next_state  # Переход в следующее состояние
-        self._stack.pop()  # Убираем верхний символ стека
+        self._current_state = next_state  
+        self._stack.pop()  
 
         for new_stack_symbol in reversed(new_stack_symbols):  
-            self._stack.append(new_stack_symbol)  # Добавляем новые символы в стек
+            self._stack.append(new_stack_symbol)  
 
-        self.output_string += output_symbol  # Обновляем выходную строку
+        self.output_string += output_symbol  
         self.history.append(f"Текущее состояние: {self._current_state}, символ: {symbol}, "
-                            f"стек: {', '.join(self._stack)}, выход: {self.output_string}")  # Записываем историю работы
+                            f"стек: {', '.join(self._stack)}, выход: {self.output_string}")  
 
-        return (True, "")  # Успешный шаг
+        return (True, "")  
 
 
 class MainWindow(tk.Tk):
